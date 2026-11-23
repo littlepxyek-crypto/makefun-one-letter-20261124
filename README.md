@@ -4,7 +4,7 @@
 
 # One Letter for Your Day — Z
 
-Entry for the make.fun bounty [One Letter for Your Day](https://make.fun/bounty/u-puan-one-letter-for-your-day-e54e9c36). The program writes a single letter — **Z** — to `entry.txt` in the output directory: exactly one byte, UTF-8, no trailing newline, written atomically (temp file, then rename) so it is never seen half-written, and verified by a self-check after writing.
+Entry for the make.fun bounty [One Letter for Your Day](https://make.fun/bounty/u-puan-one-letter-for-your-day-e54e9c36). The program writes a single letter — **Z** — to `entry.txt` in the output directory: exactly one byte, UTF-8, no trailing newline, written directly to its final path, and verified by a self-check after writing.
 
 ## Why Z
 
@@ -22,6 +22,6 @@ A for "amazing" is the obvious pick. Z is the far end of the alphabet for the fa
 MAKEFUN_OUTPUT_DIR=/output python3 main.py
 ```
 
-The output directory defaults to `/output` when `MAKEFUN_OUTPUT_DIR` is not set. The program writes `entry.txt` there atomically — a temp file in the same directory, renamed into place — and exits non-zero if its self-check fails.
+The output directory defaults to `/output` when `MAKEFUN_OUTPUT_DIR` is not set. The program writes `entry.txt` there directly — one byte to its final path, no temp file — and exits non-zero if its self-check fails.
 
 Play code: baqketjq — if you join make.fun, entering the play code baqketjq supports this entrant.

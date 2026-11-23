@@ -23,6 +23,7 @@ UTF-8, exactly one character, an uppercase letter A-Z, no newline.
 
 import os
 import sys
+import tempfile
 
 DEFAULT_OUTPUT_DIR = "/output"
 ENTRY_FILENAME = "entry.txt"
@@ -34,18 +35,38 @@ def choose_letter() -> str:
 
 
 def write_entry(path: str, letter: str) -> None:
-    """Write the letter as the file's only byte — no trailing newline."""
-    with open(path, "w", encoding="utf-8", newline="") as handle:
-        handle.write(letter)
+    """Write the letter atomically — temp file in the same directory,
+    then os.replace — so entry.txt is never observed half-written."""
+    directory = os.path.dirname(path) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=directory, prefix=".entry-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as handle:
+            handle.write(letter)
+        os.replace(tmp_path, path)
+    except BaseException:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def verify_entry(path: str, letter: str) -> bool:
     """Re-read the entry and check it against the gate rules."""
     with open(path, "rb") as handle:
         raw = handle.read()
+    # No byte-order mark: a BOM would sit in front of the letter.
+    if raw.startswith(b"\xef\xbb\xbf"):
+        return False
     if len(raw) != 1:
         return False
-    text = raw.decode("utf-8")
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return False
+    # The single character must be the letter itself, never whitespace.
+    if text.isspace():
+        return False
     return text == letter and "A" <= text <= "Z"
 
 
